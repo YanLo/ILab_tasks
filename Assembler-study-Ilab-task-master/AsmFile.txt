@@ -1,0 +1,9 @@
+IN 1 ;read in reg1 from stdin
+MOV 2 1
+:1
+JZ 1 2
+MUL 2 1
+DEC 1
+J 1
+:2
+OUT 2
