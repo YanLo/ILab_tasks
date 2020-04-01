@@ -19,7 +19,7 @@ enum Commands
 
 #define CMD_DEF(name, arg_qt, cpu_instruction)				\
 	CMD_##name,
-#include "commands.h"
+#include "commands.hpp"
 #undef CMD_DEF
 
 #undef CMD_NAME
@@ -27,7 +27,7 @@ enum Commands
 };
 
 
-#include "dumpString.h"
+#include "dumpString.hpp"
 
 #define GETFILE(name, mode)						\
 FILE* get##name##File()							\
@@ -53,9 +53,9 @@ Assembler::Assembler():
 	cur_cmd_num_	(0)
 {
 	asmfile_ = getAsmFile();
-	binfile_ = getBinFile(); 
+	binfile_ = getBinFile();
 	asm_buf_ = readInBuf(); //asm_filesize initialised there
-	temp_buf_ = (char*) calloc(asm_filesize_ * sizeof(data_t), 
+	temp_buf_ = (char*) calloc(asm_filesize_ * sizeof(data_t),
 								sizeof(char));
 
 	for (int i = 0; i < MAX_LABEL_QT; i++)
@@ -81,10 +81,10 @@ char Assembler::getCmdCode(const char* cptr)
 	if (!strcmp(#name, cptr))						\
 		return	CMD_##name;
 	#define CMD_NAME
-	#include "commands.h"
+	#include "commands.hpp"
 	#undef CMD_NAME
 	#undef CMD_DEF
-	printf("At line %zu: command %s was not declared\n", 
+	printf("At line %zu: command %s was not declared\n",
 											cur_asm_line_, cptr);
 	return CMD_DEFAULT;
 }
@@ -98,14 +98,13 @@ int Assembler::getCmdArgQt(const char cmdNum)
 
 	switch (cmdNum)
 	{
-#include "commands.h"
+#include "commands.hpp"
 		default: return -1;
 	}
 #undef CMD_DEF
 #undef CMD_NAME
 }
 
-#define DUMP_READ_IN_BUF
 char* Assembler::readInBuf()
 {
 	FUNC_HI
@@ -127,14 +126,13 @@ char* Assembler::readInBuf()
 	fread(asm_buf_, sizeof(char), asm_filesize_, asmfile_);
 
 	asm_buf_[asm_filesize_] = '\n';
-#ifdef DUMP_READ_IN_BUF
+#ifdef DEBUG
 	dumpString(asm_buf_, asm_filesize_);
-#endif
+#endif //DEBUG
 	PRINTF("\n\tAsmFileSize___is_%zu\n", asm_filesize_);
 	FUNC_BYE
 	return asm_buf_;
 }
-#undef DUMP_READ_IN_BUF
 
 void Assembler::deleteComments()
 {
@@ -226,9 +224,9 @@ void Assembler::putCmdArgsInTempBuf(char** bufp)
 		for (j = 0; j < arg_qt; j++)
 		{
 			if (!sscanf(*bufp, "%d%n", &arg, &argLen))
-			{	
+			{
 				printf("\nInvalid argument(NaN) at line %zu\n",
-												cur_asm_line_); 
+												cur_asm_line_);
 				exit(1);
 			}
 			if (labels_[arg] == -1)
@@ -254,7 +252,7 @@ void Assembler::putCmdArgsInTempBuf(char** bufp)
 		for(j = 0; j < arg_qt; j++)
 		{
 			if (!sscanf(*bufp, "%d%n", &arg, &argLen))
-			{	
+			{
 				printf("\nInvalid argument(NaN) at line %zu\n",
 													cur_asm_line_);
 				exit(1);
@@ -284,20 +282,20 @@ int Assembler::getLabelNumFromBuf(char** bufp)
 
 	if (label_len == -1)
 	{
-		//printf("\nAt line %zu: wrong label\n", cur_asm_line_);  
+		//printf("\nAt line %zu: wrong label\n", cur_asm_line_);
 				//Maybe without printf?
 		return -1;
 	}
 	if (**bufp == '\n')
 	{
 		*bufp += 1;
-	} 
+	}
 	else
 	{
 		sscanf(*bufp,"%*[ \t\r]%n\n%n", &gapLen, &slashNIndicator);
 		if (slashNIndicator == -1)
 		{
-			printf("\nAt line %zu: labels_ must be on " 
+			printf("\nAt line %zu: labels_ must be on "
 					"separate lines\n",
 					cur_asm_line_);
 			exit(1);
@@ -326,14 +324,14 @@ int Assembler::getLabelNumFromBuf(char** bufp)
 	}
 
 	labels_[*label_str - '0'] = cur_cmd_num_ + 1;
-	PRINTF("\n\t__Label_%s_points_to_%zu\n", 
+	PRINTF("\n\t__Label_%s_points_to_%zu\n",
 			label_str, cur_cmd_num_ + 1);
 	return 0;
 	FUNC_BYE
 }
 
 void Assembler::passingLabels()
-{	
+{
 	FUNC_HI
 	assert(asm_buf_);
 	char* cptr = asm_buf_;
@@ -345,7 +343,7 @@ void Assembler::passingLabels()
 
 #define COLLECT_LABELS
 #ifdef COLLECT_LABELS
-	while(cptr < end_of_asm_buf_ - 1) 
+	while(cptr < end_of_asm_buf_ - 1)
 	{
 		skipGaps(&cptr);
 		int ind = getLabelNumFromBuf(&cptr);
@@ -371,7 +369,6 @@ void Assembler::passingLabels()
 	FUNC_BYE
 }
 
-#define PRINT_PARSE_COMMANDS
 void Assembler::parseCommandsInBinFile()
 {
 	FUNC_HI
@@ -380,7 +377,7 @@ void Assembler::parseCommandsInBinFile()
 	char* end_of_asm_buf_ = asm_buf_ + asm_filesize_;
 
 	cur_asm_line_  = 0;
-	while(cptr < end_of_asm_buf_ - 1) 
+	while(cptr < end_of_asm_buf_ - 1)
 	{
 		skipGaps(&cptr);
 		putCmdCodeInTempBuf(&cptr);
@@ -393,13 +390,12 @@ void Assembler::parseCommandsInBinFile()
 
 	bin_buf_ = (char*) calloc(bin_filesize_, sizeof(char));
 	ALLOC(bin_buf_)
-					
-	memcpy(bin_buf_, temp_buf_, bin_filesize_); 
-			
-#ifdef PRINT_PARSE_COMMANDS
+
+	memcpy(bin_buf_, temp_buf_, bin_filesize_);
+
+#ifdef DEBUG
 	dumpString(bin_buf_, bin_filesize_);
-#endif
-#undef PRINT_PARSE_COMMANDS			
+#endif //DEBUG
 	assert(binfile_);
 	assert(bin_filesize_ >= 0);
 	fwrite(bin_buf_, sizeof(char), bin_filesize_, binfile_);
@@ -410,9 +406,13 @@ int main()
 {
 	Assembler asm1;
 	asm1.deleteComments();
+#ifdef DEBUF
 	dumpString(asm1.asm_buf_, asm1.asm_filesize_);
+#endif //DEBUG
 	asm1.passingLabels();
 	asm1.deleteLabelsInBuf();
 	asm1.parseCommandsInBinFile();
+
+    printf("Assembler file has been compiled into Binary file successfully\n");
 	return 0;
 }

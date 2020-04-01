@@ -1,2 +1,0 @@
-#! bin/bash
-g++ asm1.cpp commands.h -o asm1

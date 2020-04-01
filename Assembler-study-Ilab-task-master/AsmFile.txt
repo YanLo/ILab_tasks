@@ -1,3 +1,4 @@
+; compute factorial of number placed in register 1
 IN 1 ;read in reg1 from stdin
 MOV 2 1
 :1

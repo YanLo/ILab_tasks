@@ -1,3 +1,6 @@
+#ifndef INCLUDE_DUMP
+#define INCLUDE_DUMP
+
 void dumpString(char* array, int len)
 {
 	assert(array);
@@ -16,4 +19,4 @@ void dumpString(char* array, int len)
 	printf("\n\n\t___________Bye_____________________________\n");
 }
 
-
+#endif //INCLUDE_DUMP

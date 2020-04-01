@@ -7,7 +7,7 @@
 //#define DEBUG
 
 #include "myDefines.hpp"
-#include "dumpString.h"
+#include "dumpString.hpp"
 typedef int data_t;
 
 #define GETFILE(name, mode)						\
@@ -24,7 +24,7 @@ GETFILE(Out, w)
 
 const size_t STACK_SIZE = 1024;
 
-enum 
+enum
 {
 	RAM_SIZE = 1024,
 	MAX_ARG_QT = 4
@@ -36,7 +36,7 @@ enum commands
 
 #define CMD_DEF(name, argQt, cpu_instruction)				\
 	CMD_##name,
-#include "commands.h"
+#include "commands.hpp"
 #undef CMD_DEF
 
 #undef CMD_NAME
@@ -52,7 +52,7 @@ int getCmdArgQt(const char cmdNum)
 
 	switch (cmdNum)
 	{
-#include "commands.h"
+#include "commands.hpp"
 		default: return -1;
 	}
 
@@ -107,7 +107,7 @@ Cpu::~Cpu()
 	binfile_	= NULL;
 	IP_			= 0;
 	CP_		 	= 0;
-	bin_filesize_	= 0; 
+	bin_filesize_	= 0;
 	free(RAM_);
 	free(Registers_);
 	FUNC_BYE
@@ -146,7 +146,7 @@ void Cpu::Performer()
 		switch(cmd)
 		{
 #define CMD_NAME
-#include "commands.h"
+#include "commands.hpp"
 #undef CMD_NAME
 #undef CMD_DEF
 		}
@@ -158,7 +158,9 @@ int main()
 {
 	Cpu cpu;
 	PRINTF("\n\tDump of an binFile\n");
+#ifdef DEBUG
 	dumpString(cpu.RAM_, cpu.bin_filesize_);
+#endif //DEBUG
 	cpu.Performer();
 	return 0;
 }
